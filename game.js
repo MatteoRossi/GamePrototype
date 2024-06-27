@@ -181,18 +181,24 @@ function draw() {
         ctx.fillText(progress.text, progress.x, progress.y);
     });
 
-    // Draw score bar
+    const barX = 10;
+    const barY = 50;
+    const barWidth = canvas.width - 20;
+    const barHeight = 20;
     ctx.fillStyle = 'black';
-    ctx.fillRect(200, 50, 780, 20);
+    ctx.fillRect(barX, barY, barWidth, barHeight);
 
+    const fillWidth = (score / maxScore) * barWidth;
     ctx.fillStyle = score > 50 ? 'red' : 'blue';
-    ctx.fillRect(200, 50, score * 7.8, 20);
+    ctx.fillRect(barX, barY, fillWidth, barHeight);
 
     ctx.fillStyle = 'black';
-    ctx.drawImage(poilievreImg, 200, 0, 50, 50);
-    ctx.drawImage(trudeauImg, 950, 0, 50, 50);
-    ctx.fillText('Deliver services to Canadians', 860, 90);
-    ctx.fillText('Cut taxes for the rich', 300, 90);
+    ctx.fillText(`Score: ${score}`, 10, 20);
+    ctx.drawImage(poilievreImg, 0, 0, 50, 50);
+    ctx.drawImage(trudeauImg, canvas.width - 50, 0, 50, 50);
+    ctx.fillText('Deliver services to Canadians', 10, barY + barHeight + 20);
+    ctx.fillText('Cut taxes for the rich', canvas.width - 200, barY + barHeight + 20);
+
 }
 
 function endGame(message) {
