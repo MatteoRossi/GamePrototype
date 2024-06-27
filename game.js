@@ -196,8 +196,8 @@ function draw() {
     ctx.fillText(`Score: ${score}`, 10, 20);
     ctx.drawImage(poilievreImg, 0, 0, 50, 50);
     ctx.drawImage(trudeauImg, canvas.width - 50, 0, 50, 50);
-    ctx.fillText('Deliver services to Canadians', 10, barY + barHeight + 20);
-    ctx.fillText('Cut taxes for the rich', canvas.width - 200, barY + barHeight + 20);
+    ctx.fillText('Cut taxes for the rich', 10, barY + barHeight + 20);
+    ctx.fillText('Deliver services to Canadians', canvas.width - 200, barY + barHeight + 20);
 
 }
 
