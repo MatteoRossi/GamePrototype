@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Slasher</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        canvas { border: 1px solid black; display: block; margin: 0 auto; }
+        #endScreen { display: none; }
+    </style>
+</head>
+<body>
+    <h1>Service Slasher</h1>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="endScreen">
+        <h2 id="endMessage"></h2>
+        <button onclick="shareGame()">Share</button>
+        <button onclick="restartGame()">Restart</button>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
