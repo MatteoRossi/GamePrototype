@@ -5,17 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Service Slasher</title>
     <style>
-        body { text-align: center; font-family: Arial, sans-serif; }
-        canvas { border: 1px solid black; display: block; margin: 0 auto; }
-        #endScreen { display: none; }
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Disable scrolling */
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: white; /* Light background for contrast */
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            border: 1px solid black;
+            display: block;
+            background-color: #f9f9f9;
+            max-width: 800px;
+            max-height: 600px;
+            
+        }
+        #endScreen, #pauseMenu {
+            display: none;
+            text-align: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
-    <h1>Service Slasher</h1>
+    <h3 style="text-align: center;">Service Slasher</h3>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
     <div id="endScreen">
         <h2 id="endMessage"></h2>
         <button onclick="shareGame()">Share</button>
+        <button onclick="restartGame()">Restart</button>
+    </div>
+    <div id="pauseMenu">
+        <h2>Game Paused</h2>
+        <button onclick="resumeGame()">Continue</button>
         <button onclick="restartGame()">Restart</button>
     </div>
     <script src="game.js"></script>
