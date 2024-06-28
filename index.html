@@ -23,12 +23,19 @@
             font-size: 16px;
             cursor: pointer;
         }
+        #moment {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
     <div id="endScreen">
         <h1>Game Over</h1>
+        <p>Your score: <span id="score"></span></p>
+        <p>You got this Pierre Poilievre heritage moment: <br><span id="moment"></span></p>
         <iframe id="videoEmbed" width="400" height="400" frameborder="0" allowfullscreen></iframe>
         <br>
         <button id="shareButton">Share</button>

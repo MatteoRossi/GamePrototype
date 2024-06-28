@@ -28,16 +28,23 @@ obstacleImage.src = 'obstacle.png'; // Path to obstacle image
 const pointImage = new Image();
 pointImage.src = 'point.png'; // Path to point image
 
+const playerImage = new Image();
+playerImage.src = 'player.png'; // Path to player image
+
 const endScreen = document.getElementById('endScreen');
 const shareButton = document.getElementById('shareButton');
 const restartButton = document.getElementById('restartButton');
 const videoEmbed = document.getElementById('videoEmbed');
 
-const videoUrls = [
-    'https://www.youtube.com/embed/dQw4w9WgXcQ', // Add more YouTube embed URLs here
-    'https://www.youtube.com/embed/another-video',
-    'https://www.youtube.com/embed/yet-another-video'
-];
+// create a map with description for each video url
+const videoMap = new Map([
+    ['https://www.youtube.com/embed/OoU3DVjh1SM', 'Used misogynistic acronym in Youtube tags'],
+    ['https://www.youtube.com/embed/-DgxeMkTWwI', 'Qualified for his pension at 31'],
+    ['https://www.youtube.com/embed/K_q9yP-bRiY', 'Posed with someone wearing a `straight pride` shirt'],
+    ["https://www.youtube.com/embed/bOcgEZCeUCI", "Spoke at the Frontier Centre that denies Residential Schools"],  
+    ["https://www.youtube.com/embed/Bim3a1Spzhw", "Voted against same-sex marriage"],
+]);
+
 
 shareButton.addEventListener('click', () => {
     const shareData = {
@@ -64,8 +71,7 @@ function resizeCanvas() {
 }
 
 function drawPlayer() {
-    ctx.fillStyle = 'blue';
-    ctx.fillRect(player.x, player.y, player.width, player.height);
+    ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
 }
 
 function drawObstacles() {
@@ -211,11 +217,27 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function getRandomVideo() {
+    const keys = Array.from(videoMap.keys());
+    const randomKey = keys[Math.floor(Math.random() * keys.length)];
+    return {
+        url: randomKey,
+        title: videoMap.get(randomKey)
+    };
+}
+
 function showEndScreen() {
     canvas.style.display = 'none';
     endScreen.style.display = 'block';
-    const randomVideoUrl = videoUrls[Math.floor(Math.random() * videoUrls.length)];
-    videoEmbed.src = randomVideoUrl;
+
+    // insert the score
+    document.getElementById('score').textContent = score;
+     
+    //select a random key/value pair from videoUrls map
+    const randomVideo = getRandomVideo();
+    videoEmbed.src = randomVideo.url;
+    document.getElementById('moment').textContent = randomVideo.title;
+
 }
 
 function drawStartScreen() {
@@ -223,6 +245,7 @@ function drawStartScreen() {
     ctx.fillStyle = 'black';
     ctx.font = '30px Arial';
     ctx.textAlign = 'center';
+    ctx.fillText('20 YEARS OF PIERRE POILIEVRE', canvas.width / 2, canvas.height / 2 - 50);
     //if mobile
     if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
         ctx.fillText('Tap to start', canvas.width / 2, canvas.height / 2);
