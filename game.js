@@ -22,9 +22,12 @@ let nextObstacleSpawn = getRandomInt(150, 200);
 let nextPointSpawn = getRandomInt(250, 300);
 let gameStarted = false;
 
-const obstacleImage = new Image();
-obstacleImage.src = 'obstacle.png'; // Path to obstacle image
-
+const obstacleImages = [];
+for (let i = 1; i <= 5; i++) {
+    const img = new Image();
+    img.src = `obstacle_${i}.png`; // Path to obstacle images named "obstacle_1.png", "obstacle_2.png", etc.
+    obstacleImages.push(img);
+}
 const pointImage = new Image();
 pointImage.src = 'point.png'; // Path to point image
 
@@ -76,10 +79,9 @@ function drawPlayer() {
 
 function drawObstacles() {
     obstacles.forEach(obstacle => {
-        ctx.drawImage(obstacleImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        ctx.drawImage(obstacle.image, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
     });
 }
-
 function drawPoints() {
     points.forEach(point => {
         ctx.drawImage(pointImage, point.x, point.y, point.width, point.height);
@@ -103,11 +105,13 @@ function handlePlayerMovement() {
 
 function handleObstacles() {
     if (frameCount === nextObstacleSpawn) {
+        const randomImage = obstacleImages[Math.floor(Math.random() * obstacleImages.length)];
         obstacles.push({
             x: canvas.width,
             y: canvas.height - 50,
             width: 50,
-            height: 50
+            height: 50,
+            image: randomImage
         });
         nextObstacleSpawn = frameCount + getRandomInt(150, 200);
     }
@@ -129,7 +133,7 @@ function handlePoints() {
         points.push({
             x: canvas.width,
             y: getRandomInt(canvas.height - 150, canvas.height - 100),
-            width: 40,
+            width: 25,
             height: 40
         });
         nextPointSpawn = frameCount + getRandomInt(250, 300);
@@ -158,11 +162,11 @@ function collision(rect1, rect2) {
 
 function drawScore() {
     ctx.fillStyle = 'black';
-    ctx.font = '20px Arial';
-    ctx.fillText(score + " x ", 30, 30);
+    ctx.font = '30px Arial';
+    ctx.fillText(score + " x ", 35, 35);
 
     //add an image after the text
-    ctx.drawImage(pointImage, 45, 5, 30, 30);
+    ctx.drawImage(pointImage, 60, 5, 25, 40);
 } 
 
 function gameLoop() {
