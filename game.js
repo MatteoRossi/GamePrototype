@@ -1,155 +1,218 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const endScreen = document.getElementById('endScreen');
-const endMessage = document.getElementById('endMessage');
 
 const player = {
-    x: 400,
-    y: 500,
+    x: 50,
+    y: 300,
     width: 50,
     height: 50,
-    speed: 5,
-    vx: 0,
-    vy: 0,
-    isJumping: false,
+    dy: 0,
     gravity: 0.5,
-    jumpStrength: -10,
-    onGround: false
+    jumpPower: 15,
+    isJumping: false
 };
 
-const serviceCuts = [];
-const positiveProgress = [];
-const keys = {};
-
-let score = 50; // Starts in the middle of the bar (0 to 100 scale)
-const maxScore = 100;
-const minScore = 0;
-let gameInterval;
-let serviceCutInterval;
-let positiveProgressInterval;
+const obstacles = [];
+const points = [];
+let score = 0;
+let gameOver = false;
+let gameSpeed = 3;
+let frameCount = 0;
+let nextObstacleSpawn = getRandomInt(150, 200);
+let nextPointSpawn = getRandomInt(250, 300);
 let gameStarted = false;
 
-document.addEventListener('keydown', (e) => {
-    keys[e.key] = true;
-    if (!gameStarted && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
-        startGame();
-    }
+const obstacleImage = new Image();
+obstacleImage.src = 'obstacle.png'; // Path to obstacle image
+
+const pointImage = new Image();
+pointImage.src = 'point.png'; // Path to point image
+
+const endScreen = document.getElementById('endScreen');
+const shareButton = document.getElementById('shareButton');
+const restartButton = document.getElementById('restartButton');
+const videoEmbed = document.getElementById('videoEmbed');
+
+const videoUrls = [
+    'https://www.youtube.com/embed/dQw4w9WgXcQ', // Add more YouTube embed URLs here
+    'https://www.youtube.com/embed/another-video',
+    'https://www.youtube.com/embed/yet-another-video'
+];
+
+shareButton.addEventListener('click', () => {
+    const shareData = {
+        title: 'Endless Runner Game',
+        text: 'I scored ' + score + ' points in the Endless Runner Game!',
+        url: window.location.href
+    };
+    navigator.share(shareData).catch(console.error);
 });
-document.addEventListener('keyup', (e) => keys[e.key] = false);
 
+restartButton.addEventListener('click', () => {
+    location.reload();
+});
 
-const serviceCutPromises = [
-    "Cut funding for public health care and privatize services.",
-    "Cancel all climate change initiatives and projects.",
-    "Eliminate funding for public education programs.",
-    "Reduce pensions and social assistance to balance the budget.",
-    "Deregulate industries at the expense of safety and environmental standards.",
-    "Ignore scientific research and experts in policy-making.",
-    "Cut unemployment benefits and force people back to work.",
-    "Dismiss indigenous rights and land claims.",
-    "Remove restrictions on corporate political donations."
-];
+function resizeCanvas() {
+    canvas.width = 800;
+    canvas.height = 400;
 
-const positiveProgresses = [
-    "Invest in public health care and expand services.",
-    "Implement and fund climate change initiatives.",
-    "Increase funding for public education and scholarships.",
-    "Enhance pensions and social assistance programs.",
-    "Strengthen regulations for safety and environmental standards.",
-    "Support scientific research and expert-led policy-making.",
-    "Extend unemployment benefits and support job training programs.",
-    "Recognize and uphold indigenous rights and land claims.",
-    "Enforce restrictions on corporate political donations."
-];
-
-const trudeauImg = new Image();
-trudeauImg.src = 'trudeau.png'; // Replace with the actual image path
-const poilievreImg = new Image();
-poilievreImg.src = 'poilievre.png'; // Replace with the actual image path
-const blueBoxImg = new Image();
-blueBoxImg.src = 'lids.png'; // Replace with the actual image path
-const redBoxImg = new Image();
-redBoxImg.src = 'flag.png'; // Replace with the actual image path
-
-
-function createServiceCut() {
-    const x = Math.random() * canvas.width;
-    const text = serviceCutPromises[Math.floor(Math.random() * serviceCutPromises.length)];
-    serviceCuts.push({ x, y: 0, width: 45, height: 45, speed: 3, text });
+   //if mobile, make full screen
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        canvas.width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+        canvas.height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+    }
 }
 
-function createPositiveProgress() {
-    const x = Math.random() * canvas.width;
-    const text = positiveProgresses[Math.floor(Math.random() * positiveProgresses.length)];
-    positiveProgress.push({ x, y: 0, width: 45, height: 45, speed: 2, text });
+function drawPlayer() {
+    ctx.fillStyle = 'blue';
+    ctx.fillRect(player.x, player.y, player.width, player.height);
 }
 
-function update() {
-    // Horizontal movement
-    if (keys['ArrowLeft'] || keys['a']) {
-        player.vx = -player.speed;
-    } else if (keys['ArrowRight'] || keys['d']) {
-        player.vx = player.speed;
-    } else {
-        player.vx = 0;
+function drawObstacles() {
+    obstacles.forEach(obstacle => {
+        ctx.drawImage(obstacleImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+    });
+}
+
+function drawPoints() {
+    points.forEach(point => {
+        ctx.drawImage(pointImage, point.x, point.y, point.width, point.height);
+    });
+}
+
+function handlePlayerMovement() {
+    if (player.isJumping) {
+        player.dy = -player.jumpPower;
+        player.isJumping = false;
     }
 
-    // Jumping
-    if ((keys['ArrowUp'] || keys[' ']) && !player.isJumping && player.onGround) {
-        player.vy = player.jumpStrength;
-        player.isJumping = true;
-        player.onGround = false;
-    }
+    player.dy += player.gravity;
+    player.y += player.dy;
 
-    // Apply gravity
-    player.vy += player.gravity;
-    player.x += player.vx;
-    player.y += player.vy;
-
-    // Collision with the ground
     if (player.y + player.height > canvas.height) {
         player.y = canvas.height - player.height;
-        player.vy = 0;
-        player.isJumping = false;
-        player.onGround = true;
+        player.dy = 0;
+    }
+}
+
+function handleObstacles() {
+    if (frameCount === nextObstacleSpawn) {
+        obstacles.push({
+            x: canvas.width,
+            y: canvas.height - 50,
+            width: 50,
+            height: 50
+        });
+        nextObstacleSpawn = frameCount + getRandomInt(150, 200);
     }
 
-    // Keep player within canvas bounds
-    if (player.x < 0) player.x = 0;
-    if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
-
-    serviceCuts.forEach((cut, index) => {
-        cut.y += cut.speed;
-        if (cut.y > canvas.height) serviceCuts.splice(index, 1);
-        if (isColliding(player, cut)) {
-            score -= 5;
-            if (score < minScore) {
-                score = minScore;
-                endGame('Not only do you lose, Canada looses too! Try Again!');
-            }
-            serviceCuts.splice(index, 1);
+    obstacles.forEach((obstacle, index) => {
+        obstacle.x -= gameSpeed;
+        if (obstacle.x + obstacle.width < 0) {
+            obstacles.splice(index, 1);
         }
-    });
-
-    positiveProgress.forEach((progress, index) => {
-        progress.y += progress.speed;
-        if (progress.y > canvas.height) positiveProgress.splice(index, 1);
-        if (isColliding(player, progress)) {
-            score += 5;
-            if (score > maxScore) {
-                score = maxScore;
-                endGame('Congratulations! You helped us deliver for Canadians');
-            }
-            positiveProgress.splice(index, 1);
+        if (collision(player, obstacle)) {
+            gameOver = true;
+            showEndScreen();
         }
     });
 }
 
-function isColliding(a, b) {
-    return a.x < b.x + b.width &&
-           a.x + a.width > b.x &&
-           a.y < b.y + b.height &&
-           a.y + a.height > b.y;
+function handlePoints() {
+    if (frameCount === nextPointSpawn) {
+        points.push({
+            x: canvas.width,
+            y: getRandomInt(canvas.height - 150, canvas.height - 100),
+            width: 40,
+            height: 40
+        });
+        nextPointSpawn = frameCount + getRandomInt(250, 300);
+    }
+
+    points.forEach((point, index) => {
+        point.x -= gameSpeed;
+        if (point.x + point.width < 0) {
+            points.splice(index, 1);
+        }
+        if (collision(player, point)) {
+            score++;
+            points.splice(index, 1);
+        }
+    });
+}
+
+function collision(rect1, rect2) {
+    return (
+        rect1.x < rect2.x + rect2.width &&
+        rect1.x + rect1.width > rect2.x &&
+        rect1.y < rect2.y + rect2.height &&
+        rect1.y + rect1.height > rect2.y
+    );
+}
+
+function drawScore() {
+    ctx.fillStyle = 'black';
+    ctx.font = '20px Arial';
+    ctx.fillText('Score: ' + score, 10, 30);
+}
+
+function gameLoop() {
+    if (!gameStarted || gameOver) {
+        drawStartScreen();
+        return;
+    }
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawPlayer();
+    drawObstacles();
+    drawPoints();
+    drawScore();
+
+    handlePlayerMovement();
+    handleObstacles();
+    handlePoints();
+
+    frameCount++;
+    if (frameCount % 300 === 0) {
+        gameSpeed += 0.5; // Increase the speed every 300 frames
+    }
+
+    if (frameCount % 200 === 0) {
+        nextObstacleSpawn = frameCount + getRandomInt(100, 150); // Spawn more obstacles as time goes on
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+
+document.addEventListener('keydown', (event) => {
+    if (event.code === 'Space') {
+        if (!gameStarted) {
+            gameStarted = true;
+            gameLoop();
+        } else if (player.y + player.height === canvas.height) {
+            player.isJumping = true;
+        }
+    }
+});
+
+canvas.addEventListener('touchstart', (event) => {
+    if (!gameStarted) {
+        gameStarted = true;
+        gameLoop();
+    } else if (player.y + player.height === canvas.height) {
+        player.isJumping = true;
+    }
+});
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function showEndScreen() {
+    canvas.style.display = 'none';
+    endScreen.style.display = 'block';
+    const randomVideoUrl = videoUrls[Math.floor(Math.random() * videoUrls.length)];
+    videoEmbed.src = randomVideoUrl;
 }
 
 function drawStartScreen() {
@@ -157,116 +220,13 @@ function drawStartScreen() {
     ctx.fillStyle = 'black';
     ctx.font = '30px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Press any arrow key to start', canvas.width / 2, canvas.height / 2);
+    ctx.fillText('Press "Space" to start', canvas.width / 2, canvas.height / 2 - 20);
     ctx.font = '20px Arial';
-    ctx.fillText('Use arrow keys to move left and right', canvas.width / 2, canvas.height / 2 + 40);
-    ctx.fillText('Avoid harmful cuts and collect positive progress', canvas.width / 2, canvas.height / 2 + 70);
-}
-
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = 'black';
-    ctx.fillRect(player.x, player.y, player.width, player.height);
-
-    serviceCuts.forEach(cut => {
-        ctx.drawImage(blueBoxImg, cut.x, cut.y, cut.width, cut.height); // Draw the blue box image
-        ctx.fillStyle = 'black';
-        ctx.fillText(cut.text, cut.x, cut.y);
-    });
-
-    positiveProgress.forEach(progress => {
-        ctx.drawImage(redBoxImg, progress.x, progress.y, progress.width, progress.height);
-        ctx.fillStyle = 'black';
-        ctx.fillText(progress.text, progress.x, progress.y);
-    });
-
-    const barX = 10;
-    const barY = 50;
-    const barWidth = canvas.width - 20;
-    const barHeight = 20;
-    ctx.fillStyle = 'black';
-    ctx.fillRect(barX, barY, barWidth, barHeight);
-
-    const fillWidth = (score / maxScore) * barWidth;
-    ctx.fillStyle = score > 50 ? 'red' : 'blue';
-    ctx.fillRect(barX, barY, fillWidth, barHeight);
-
-    ctx.fillStyle = 'black';
-    ctx.fillText(`Score: ${score}`, 10, 20);
-    ctx.drawImage(poilievreImg, 0, 0, 50, 50);
-    ctx.drawImage(trudeauImg, canvas.width - 50, 0, 50, 50);
-    ctx.fillText('Cut taxes for the rich', 10, barY + barHeight + 20);
-    ctx.fillText('Deliver services to Canadians', canvas.width - 200, barY + barHeight + 20);
-
-}
-
-function endGame(message) {
-    clearInterval(gameInterval);
-    clearInterval(serviceCutInterval);
-    clearInterval(positiveProgressInterval);
-    endMessage.innerText = `${message}`;
-    endScreen.style.display = 'block';
-}
-
-function restartGame() {
-    score = 50;
-    serviceCuts.length = 0;
-    positiveProgress.length = 0;
-    player.x = 400;
-    player.y = 500;
-    endScreen.style.display = 'none';
-    startGame();
-}
-
-function shareGame() {
-    const text = `I played Service Slasher and reached ${score > 50 ? 'Delivering services to Canadians' : 'Cutting taxes for the rich'}! Play now and see how you do!`;
-    const url = window.location.href;
-    navigator.share({
-        title: 'Service Slasher Game',
-        text,
-        url
-    });
-}
-
-function gameLoop() {
-    update();
-    draw();
-}
-
-function startGame() {
-    gameStarted = true;
-    gameInterval = setInterval(gameLoop, 1000 / 60); // 60 FPS
-    serviceCutInterval = setInterval(createServiceCut, 1000);
-    positiveProgressInterval = setInterval(createPositiveProgress, 2000);
-}
-
-// Ensure the game canvas fits the screen
-function resizeCanvas() {
-    const aspectRatio = 800 / 600;
-    const windowAspectRatio = window.innerWidth / window.innerHeight;
-    if (windowAspectRatio > aspectRatio) {
-        canvas.height = window.innerHeight;
-        canvas.width = window.innerHeight * aspectRatio;
-    } else {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerWidth / aspectRatio;
-    }
-    player.x = canvas.width / 2 - player.width / 2;
-    player.y = canvas.height - player.height - 10;
+    ctx.fillText('Jump to avoid Pierre\'s worst moments', canvas.width / 2, canvas.height / 2 + 20);
+    ctx.fillText('and collect as many points as you can!', canvas.width / 2, canvas.height / 2 + 50);
 }
 
 window.addEventListener('resize', resizeCanvas);
+
 resizeCanvas();
-
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-        clearInterval(gameInterval);
-        clearInterval(serviceCutInterval);
-        clearInterval(positiveProgressInterval);
-    } else {
-        startGame();
-    }
-});
-
 drawStartScreen();
