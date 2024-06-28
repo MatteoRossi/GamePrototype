@@ -153,8 +153,11 @@ function collision(rect1, rect2) {
 function drawScore() {
     ctx.fillStyle = 'black';
     ctx.font = '20px Arial';
-    ctx.fillText('Score: ' + score, 10, 30);
-}
+    ctx.fillText(score + " x ", 30, 30);
+
+    //add an image after the text
+    ctx.drawImage(pointImage, 45, 5, 30, 30);
+} 
 
 function gameLoop() {
     if (!gameStarted || gameOver) {
