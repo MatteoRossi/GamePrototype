@@ -51,8 +51,8 @@ const videoMap = new Map([
 
 shareButton.addEventListener('click', () => {
     const shareData = {
-        title: 'Endless Runner Game',
-        text: 'I scored ' + score + ' points in the Endless Runner Game!',
+        title: '20 Years of PP',
+        text: 'I reached ' + score +'. Can you beat the high score?',
         url: window.location.href
     };
     navigator.share(shareData).catch(console.error);
