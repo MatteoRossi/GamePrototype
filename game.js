@@ -22,6 +22,7 @@ let nextObstacleSpawn = getRandomInt(150, 200);
 let nextPointSpawn = getRandomInt(250, 300);
 let gameStarted = false;
 
+// merge obstacles and videoUrls into a single map so that every obstacle has a video and title
 const obstacleImages = [];
 for (let i = 1; i <= 5; i++) {
     const img = new Image();
@@ -48,10 +49,12 @@ const videoMap = new Map([
     ["https://www.youtube.com/embed/Bim3a1Spzhw", "Voted against same-sex marriage"],
 ]);
 
+const mergedMap = new Map([...obstacles, ...videoMap]);
+console.log(mergedMap);
 
 shareButton.addEventListener('click', () => {
     const shareData = {
-        title: '20 Years of PP',
+        title: '20 Years of Pierre Poilievre',
         text: 'I reached ' + score +'. Can you beat the high score?',
         url: window.location.href
     };
@@ -171,14 +174,12 @@ function drawScore() {
     ctx.font = '30px Arial';
     ctx.textAlign = 'left';
     ctx.drawImage(pointImage, 35, 5, 25, 40);
-    ctx.fillText(" x " + score, 65, 35);
-
-    //add an image after the text
-} 
+    ctx.fillText(" x " + score, 65, 35);} 
 
 function drawDebugInfo() {
     ctx.fillStyle = 'red';
     ctx.font = '16px Arial';
+    ctx.textAlign = 'left';
     ctx.fillText(`Frame Count: ${frameCount}`, 65, 60);
     ctx.fillText(`Next Obstacle Spawn: ${nextObstacleSpawn}`, 65, 80);
 
