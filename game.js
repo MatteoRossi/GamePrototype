@@ -104,7 +104,7 @@ function handlePlayerMovement() {
 }
 
 function handleObstacles() {
-    if (frameCount === nextObstacleSpawn) {
+    if (frameCount >= nextObstacleSpawn) {
         const randomImage = obstacleImages[Math.floor(Math.random() * obstacleImages.length)];
         obstacles.push({
             x: canvas.width,
@@ -113,7 +113,12 @@ function handleObstacles() {
             height: 50,
             image: randomImage
         });
-        nextObstacleSpawn = frameCount + getRandomInt(150, 200);
+
+        //spawn the next obstacle with a random interval and the interval can decrease as framecount goes up
+        const minSpawnInterval = Math.max(0, 150 - Math.floor(frameCount / 400) - Math.floor(gameSpeed * 15));
+        const maxSpawnInterval = Math.max(100, 250 - Math.floor(frameCount / 400) - Math.floor(gameSpeed * 15));
+        nextObstacleSpawn = frameCount + getRandomInt(minSpawnInterval, maxSpawnInterval);    
+        console.log('Min Spawn Interval: ' + minSpawnInterval, 'Max Spawn Interval: ' + maxSpawnInterval, 'Actual Spawn Interval: ' + (frameCount-nextObstacleSpawn));
     }
 
     obstacles.forEach((obstacle, index) => {
@@ -127,6 +132,7 @@ function handleObstacles() {
         }
     });
 }
+
 
 function handlePoints() {
     if (frameCount === nextPointSpawn) {
@@ -163,12 +169,20 @@ function collision(rect1, rect2) {
 function drawScore() {
     ctx.fillStyle = 'black';
     ctx.font = '30px Arial';
-    ctx.fillText(score + " x ", 35, 35);
+    ctx.textAlign = 'left';
+    ctx.drawImage(pointImage, 35, 5, 25, 40);
+    ctx.fillText(" x " + score, 65, 35);
 
     //add an image after the text
-    ctx.drawImage(pointImage, 60, 5, 25, 40);
 } 
 
+function drawDebugInfo() {
+    ctx.fillStyle = 'red';
+    ctx.font = '16px Arial';
+    ctx.fillText(`Frame Count: ${frameCount}`, 65, 60);
+    ctx.fillText(`Next Obstacle Spawn: ${nextObstacleSpawn}`, 65, 80);
+
+}
 function gameLoop() {
     if (!gameStarted || gameOver) {
         drawStartScreen();
@@ -184,6 +198,7 @@ function gameLoop() {
     handlePlayerMovement();
     handleObstacles();
     handlePoints();
+    //drawDebugInfo();
 
     frameCount++;
     if (frameCount % 300 === 0) {
