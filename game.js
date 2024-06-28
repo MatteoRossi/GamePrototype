@@ -153,8 +153,11 @@ function collision(rect1, rect2) {
 function drawScore() {
     ctx.fillStyle = 'black';
     ctx.font = '20px Arial';
-    ctx.fillText('Score: ' + score, 10, 30);
-}
+    ctx.fillText(score + " x ", 30, 30);
+
+    //add an image after the text
+    ctx.drawImage(pointImage, 45, 5, 30, 30);
+} 
 
 function gameLoop() {
     if (!gameStarted || gameOver) {
@@ -220,10 +223,15 @@ function drawStartScreen() {
     ctx.fillStyle = 'black';
     ctx.font = '30px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('Press "Space" to start', canvas.width / 2, canvas.height / 2 - 20);
+    //if mobile
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        ctx.fillText('Tap to start', canvas.width / 2, canvas.height / 2);
+    } else {
+        ctx.fillText('Press Space to start', canvas.width / 2, canvas.height / 2);
+    }
     ctx.font = '20px Arial';
-    ctx.fillText('Jump to avoid Pierre\'s worst moments', canvas.width / 2, canvas.height / 2 + 20);
-    ctx.fillText('and collect as many points as you can!', canvas.width / 2, canvas.height / 2 + 50);
+    ctx.fillText('Jump to avoid Pierre\'s worst moments', canvas.width / 2, canvas.height / 2 + 40);
+    ctx.fillText('and collect as many points as you can!', canvas.width / 2, canvas.height / 2 + 65);
 }
 
 window.addEventListener('resize', resizeCanvas);
