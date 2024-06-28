@@ -245,7 +245,7 @@ function drawStartScreen() {
     ctx.fillStyle = 'black';
     ctx.font = '30px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('20 YEARS OF PIERRE POILIEVRE', canvas.width / 2, canvas.height / 2 - 50);
+    ctx.fillText('20 YEARS OF PP', canvas.width / 2, canvas.height / 2 - 50);
     //if mobile
     if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
         ctx.fillText('Tap to start', canvas.width / 2, canvas.height / 2);
